@@ -1,0 +1,15 @@
+# Android build outputs
+android/build/
+android/assets/web/
+android/debug.keystore
+*.apk
+*.aab
+*.dex
+*.class
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
