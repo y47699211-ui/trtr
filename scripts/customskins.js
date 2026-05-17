@@ -701,12 +701,31 @@ function customWireEditor(panel, draft){
   }));
 }
 
-/* ---------- Marketplace pane ---------- */
+/* ---------- Marketplace pane ----------
+   The marketplace is paused while we ship a server-side trust /
+   moderation layer. Until that's ready we render a "под розробкою"
+   placeholder so players don't try to buy/list against a backend
+   that may wipe their HEX. Set window.__MARKET_FORCE_LIVE = true in
+   devtools to bypass the placeholder for QA. */
+var MARKET_UNDER_DEVELOPMENT = true;
+
 function renderMarketplace(){
   const panel = document.getElementById("shop-pane-market");
   if (!panel) return;
   ensureMarketplace();
   ensureCustomInv();
+  if (MARKET_UNDER_DEVELOPMENT && !(typeof window !== "undefined" && window.__MARKET_FORCE_LIVE)){
+    panel.innerHTML =
+      '<div class="market-offline glass" style="margin:18px 6px;padding:24px;flex-direction:column;text-align:center;gap:14px">'+
+      '  <div class="market-offline-icon" style="font-size:34px;line-height:1">🛠️</div>'+
+      '  <div class="market-offline-body">'+
+      '    <div class="market-offline-title">'+ (t("market.wip.title") || "Маркет у розробці") +'</div>'+
+      '    <div class="market-offline-sub">'+ (t("market.wip.sub")   || "Цей розділ тимчасово вимкнено. Скоро повернемось.") +'</div>'+
+      '  </div>'+
+      '</div>';
+    if (typeof applyI18n === "function") applyI18n();
+    return;
+  }
   const admin = (typeof isAdminUser === "function") && isAdminUser();
   const cooldown = listingsCooldownLeftMs();
   const fmt = (typeof formatCoins === "function") ? formatCoins : String;

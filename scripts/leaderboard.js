@@ -156,6 +156,25 @@ async function fetchLeaderboard(){
   /* Keep state.leaderboards in sync so other modules (e.g. the
      menu badge) read the latest list. */
   state.leaderboards = _lbMergeMe(lbCache.entries);
+  /* If the remote bin doesn't yet have a row for us but we DO have
+     a local best score, push it now so the next pull on every other
+     device sees us. Without this, a phone that submitted before the
+     bin was last reset will never re-publish until the user starts
+     a fresh run, which is exactly the "у мене є рекорд але інших
+     гравців не видно" complaint. Throttled to once per minute so
+     we don't pound the bin from the polling timer. */
+  try {
+    const myId    = state.profile && state.profile.id;
+    const meScore = (_myPublishedStats() || {}).score | 0;
+    const haveMe  = !!myId && (lbCache.entries || []).some(e => e.id === myId);
+    const now     = Date.now();
+    if (lbCache.online && myId && meScore > 0 && !haveMe){
+      if (!lbCache._lastResubmitAt || (now - lbCache._lastResubmitAt) > 60_000){
+        lbCache._lastResubmitAt = now;
+        submitLeaderboardScore(true);
+      }
+    }
+  } catch { /* fire-and-forget */ }
 
   /* Mirror the shared "update banner" the admin published. Only
      replace the cached copy if the remote stamp is newer than
@@ -308,11 +327,15 @@ function _lbPaint(){
     empty.style.textAlign  = "center";
     empty.style.color      = "var(--fg-dim)";
     /* Only show the "no internet" copy when we really have nothing
-       to show AND the network failed. Without this check, a phone
-       that had a successful pull earlier in the session would still
-       flicker to the "no internet" message during a transient miss
-       even though it has perfectly good cached entries to display. */
-    empty.textContent = (lbCache.online === false && lbCache.failureStreak >= 2)
+       to show AND the network has failed at least twice in a row
+       after an actual attempt. Without the lastFetchAt guard, the
+       very first paint (before any fetch resolved) would also say
+       "no internet" — exactly the bug "рейтинг работал раньше а
+       щяс перестал" describes. */
+    const reallyOffline = lbCache.lastFetchAt > 0
+      && lbCache.online === false
+      && (lbCache.failureStreak | 0) >= 2;
+    empty.textContent = reallyOffline
       ? (t("lb.offline") || "Немає інтернету — рекорди недоступні")
       : (t("lb.empty")   || "Ще немає жодного рекорду");
     tbl.appendChild(empty);
@@ -345,12 +368,37 @@ function _lbPaint(){
 function renderLeaderboards(){
   ensureLeaderboards();
   _lbPaint();
+  /* Inject a small "Оновити" / refresh button into the section
+     title so the player can force a fresh GET when a refresh seems
+     stuck. Idempotent — only added once per DOM. */
+  const sec = document.querySelector('section[data-screen="leaderboards"] .section-title');
+  if (sec && !document.getElementById("lb-refresh")){
+    const btn = document.createElement("button");
+    btn.id = "lb-refresh";
+    btn.className = "btn btn-ghost tiny";
+    btn.style.marginLeft = "10px";
+    btn.textContent = t("common.refresh") || "Оновити";
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      Promise.resolve(fetchLeaderboard())
+        .then(() => submitLeaderboardScore(true))
+        .finally(() => { btn.disabled = false; });
+    });
+    sec.appendChild(btn);
+  }
   /* If the cache is older than the refresh interval, kick a
      background fetch so the table self-heals when the user
      opens the screen after a long pause. */
   if (Date.now() - lbCache.lastFetchAt > LB_REFRESH_MS / 2){
     fetchLeaderboard();
   }
+  /* Opportunistic submit on screen open: ensures the player's local
+     best is in the bin even if no run has happened in this session. */
+  try {
+    if (typeof navigator === "undefined" || navigator.onLine !== false){
+      submitLeaderboardScore();
+    }
+  } catch { /* fire-and-forget */ }
 }
 
 /* Start / stop the polling timer. Called from enterApp() once

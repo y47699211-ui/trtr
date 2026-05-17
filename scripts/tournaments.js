@@ -329,10 +329,19 @@ function renderTournaments(){
   const fmt = (typeof formatCoins === "function") ? formatCoins : String;
 
   /* Header pieces (admin "new tournament" + sync hint) — drawn into
-     a stable host so re-paints don't strip the buttons mid-edit. */
+     a stable host so re-paints don't strip the buttons mid-edit.
+     The offline banner only fires after we've genuinely tried and
+     failed at least twice in a row — otherwise the very first paint
+     (before any fetch has resolved) would falsely say "no internet"
+     even on a healthy connection. That false flag was exactly what
+     the screenshot of "Немає інтернету — показано кешовані турніри"
+     reported. */
   const hint = document.getElementById("tourney-hint");
   if (hint){
-    if (tourneyCache.online === false){
+    const reallyOffline = tourneyCache.lastFetchAt > 0
+      && tourneyCache.online === false
+      && (tourneyCache.failureStreak | 0) >= 2;
+    if (reallyOffline){
       hint.textContent = t("trn.offline") || "Немає інтернету — показані останні турніри з кешу";
       hint.classList.add("warn");
     } else {
@@ -342,6 +351,22 @@ function renderTournaments(){
   }
   const addBtn = document.getElementById("tourney-add");
   if (addBtn) addBtn.classList.toggle("hidden", !admin);
+  /* Surface a manual "Оновити" / refresh control next to the hint so
+     the player has a way to force a fresh GET when they suspect the
+     screen is stale. Idempotent — only inserted once per render. */
+  if (hint && !document.getElementById("tourney-refresh")){
+    const btn = document.createElement("button");
+    btn.id = "tourney-refresh";
+    btn.className = "btn btn-ghost tiny";
+    btn.style.marginLeft = "8px";
+    btn.textContent = t("common.refresh") || "Оновити";
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      Promise.resolve(fetchTournaments()).finally(() => { btn.disabled = false; });
+    });
+    hint.appendChild(document.createTextNode(" "));
+    hint.appendChild(btn);
+  }
 
   const list = state.tournaments.list || [];
   panel.innerHTML = "";
