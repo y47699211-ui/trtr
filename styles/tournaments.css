@@ -1,0 +1,370 @@
+/* ============================================================
+   HEXON BETA — tournaments, update banner, rank pill, boost
+   hints, marketplace-offline, phone-overflow fixes.
+   Loaded after the base/feature stylesheets so it can refine
+   without an !important sledgehammer.
+   ============================================================ */
+
+/* ---------- Update banner (above Play tile) ---------- */
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(34, 211, 238, 0.10));
+  box-shadow: 0 8px 20px rgba(124, 92, 255, 0.20);
+  animation: ub-pulse 4.4s ease-in-out infinite;
+}
+.update-banner.hidden { display: none; }
+.update-banner-icon {
+  display: grid; place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(124, 92, 255, 0.20);
+  color: var(--fg);
+  flex: 0 0 auto;
+}
+.update-banner-icon .ic-svg { width: 20px; height: 20px; }
+.update-banner-body { flex: 1; min-width: 0; }
+.update-banner-body .ub-title {
+  font-weight: 800; font-size: 12px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.update-banner-body .ub-text {
+  margin-top: 2px;
+  font-size: 14px; line-height: 1.35;
+  color: var(--fg);
+  word-break: break-word;
+}
+.update-banner-close {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: var(--fg-dim);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.update-banner-close:hover { background: rgba(255, 255, 255, 0.12); color: var(--fg); }
+@keyframes ub-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(124, 92, 255, 0.20); }
+  50%      { box-shadow: 0 8px 28px rgba(124, 92, 255, 0.32); }
+}
+
+/* ---------- Global rank pill (in the user info block) ---------- */
+.menu-rank-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  margin-left: 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #1a0f00;
+  background: linear-gradient(135deg, #ffd86b, #ff9d3d);
+  box-shadow: 0 4px 10px rgba(255, 157, 61, 0.35);
+}
+.menu-rank-pill.hidden { display: none; }
+
+/* ---------- Tournaments screen ---------- */
+.tourney-screen { display: none; }
+.tourney-screen.active { display: flex; flex-direction: column; }
+.tourney-body { padding: 16px; gap: 12px; display: flex; flex-direction: column; }
+
+.tourney-hint {
+  font-size: 13px;
+  color: var(--fg-dim);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.tourney-hint.warn {
+  color: #ffd86b;
+  background: rgba(255, 216, 107, 0.10);
+  border-color: rgba(255, 216, 107, 0.30);
+}
+
+.tourney-add-btn.hidden { display: none; }
+
+.tourney-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+.tourney-empty {
+  text-align: center;
+  color: var(--fg-dim);
+  font-size: 13px;
+  padding: 40px 14px;
+}
+
+.tourney-card {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--card-strong);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.tourney-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.20); }
+.tourney-card.status-closed { opacity: 0.7; }
+.tourney-banner {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffd86b;
+}
+.tourney-card-head {
+  display: flex; align-items: center; gap: 10px;
+  justify-content: space-between;
+}
+.tourney-title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  min-width: 0;
+  word-break: break-word;
+}
+.tourney-pill {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  border: 1px solid;
+}
+.tourney-pill.status-active { color: #6ddf8f; background: rgba(109, 223, 143, 0.10); border-color: rgba(109, 223, 143, 0.45); }
+.tourney-pill.status-draft  { color: #6cb6ff; background: rgba(108, 182, 255, 0.10); border-color: rgba(108, 182, 255, 0.45); }
+.tourney-pill.status-closed { color: #b0b0b0; background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.18); }
+.tourney-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-dim);
+  line-height: 1.4;
+}
+.tourney-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+.tourney-meta .label { color: var(--fg-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+.tourney-meta .value { font-weight: 700; }
+.tourney-meta .value.hex {
+  color: #ffd86b;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.tourney-actions {
+  display: flex; gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tourney-actions .btn { flex: 1 1 auto; min-width: 0; }
+
+.tourney-top {
+  display: flex; flex-direction: column; gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tourney-top .row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 6px;
+  font-size: 12px;
+  align-items: center;
+}
+.tourney-top .row .pos { color: var(--fg-dim); font-weight: 700; }
+.tourney-top .row .nm { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tourney-top .row .sc { font-weight: 800; }
+.tourney-top .row.me .pos,
+.tourney-top .row.me .nm,
+.tourney-top .row.me .sc { color: #ffd86b; }
+
+/* Tournament modal (admin create/edit) */
+.tourney-modal {
+  width: min(560px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.tourney-modal .modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tourney-modal label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+.tourney-modal input,
+.tourney-modal textarea {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.tourney-modal textarea { resize: vertical; min-height: 70px; }
+
+/* ---------- Marketplace offline overlay ---------- */
+.market-offline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 142, 142, 0.30);
+  background: rgba(255, 142, 142, 0.08);
+}
+.market-offline-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  background: rgba(255, 142, 142, 0.15);
+  color: #ff8e8e;
+  flex: 0 0 auto;
+}
+.market-offline-body { flex: 1; min-width: 0; }
+.market-offline-title { font-weight: 800; font-size: 14px; }
+.market-offline-sub { font-size: 12px; color: var(--fg-dim); margin-top: 2px; }
+
+.market-online-note {
+  color: #6ddf8f;
+  font-weight: 700;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.market-online-note::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #6ddf8f;
+  box-shadow: 0 0 0 0 rgba(109, 223, 143, 0.7);
+  animation: market-online-pulse 1.6s ease-out infinite;
+}
+@keyframes market-online-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(109, 223, 143, 0.7); }
+  100% { box-shadow: 0 0 0 8px rgba(109, 223, 143, 0); }
+}
+
+/* Hint shown next to the gallery upload button. */
+.custom-upload-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--fg-dim);
+  text-align: center;
+}
+
+/* ---------- Boost / feature hint bubble ---------- */
+.boost-hint {
+  position: absolute;
+  bottom: -8px; left: 50%;
+  transform: translate(-50%, 100%);
+  width: max-content;
+  max-width: 280px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(20, 16, 32, 0.92);
+  border: 1px solid rgba(124, 92, 255, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.30);
+  z-index: 30;
+  display: flex; align-items: flex-start; gap: 8px;
+  animation: boost-hint-in 0.22s ease-out;
+}
+.boost-hint.fade-out { opacity: 0; transition: opacity 0.18s ease; }
+.boost-hint-body { font-size: 12px; line-height: 1.35; color: var(--fg); }
+.boost-hint-close {
+  background: none; border: none;
+  color: var(--fg-dim);
+  cursor: pointer;
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.boost-hint-close:hover { background: rgba(255, 255, 255, 0.08); }
+@keyframes boost-hint-in {
+  from { opacity: 0; transform: translate(-50%, calc(100% + 6px)); }
+  to   { opacity: 1; transform: translate(-50%, 100%); }
+}
+
+/* ---------- Admin panel: rating boost + banner editor ---------- */
+.admin-gen-row .btn { white-space: nowrap; }
+#admin-banner-text {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* ---------- Shop-tabs scroll fix on phone ---------- */
+html[data-device="phone"] .shop-tabs,
+html[data-device="tablet"] .shop-tabs {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+html[data-device="phone"] .shop-tabs::-webkit-scrollbar,
+html[data-device="tablet"] .shop-tabs::-webkit-scrollbar { display: none; }
+html[data-device="phone"] .shop-tabs .tab,
+html[data-device="tablet"] .shop-tabs .tab { flex: 0 0 auto; }
+
+/* ---------- HEX icon parity (mini-coin shown inside titles) ----------
+   Used near "Prize" / "Fee" values etc to stay consistent with the
+   wallet pill. */
+.hex-mini-coin {
+  width: 14px; height: 14px;
+  display: inline-block; vertical-align: -2px;
+  margin-right: 3px;
+}
+.hex-mini-coin svg { width: 100%; height: 100%; }
+
+/* ---------- Phone-overflow: ensure menu grid fits without scroll ---------- */
+@media (max-width: 380px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .menu-tile {
+    padding: 12px 8px;
+    gap: 6px;
+  }
+  .menu-tile span {
+    font-size: 11px;
+    line-height: 1.1;
+  }
+  .menu-tile .ic-svg.lg {
+    width: 22px; height: 22px;
+  }
+  .update-banner { padding: 10px 12px; }
+  .update-banner-icon { width: 30px; height: 30px; }
+  .update-banner-body .ub-text { font-size: 13px; }
+  .tourney-list { grid-template-columns: 1fr; gap: 10px; }
+  .tourney-card { padding: 12px; }
+  .tourney-modal .modal-row { grid-template-columns: 1fr; }
+  .menu-rank-pill { font-size: 10px; padding: 1px 6px; }
+}
+
+/* Tablet — keep 3 columns so the grid isn't too sparse. */
+@media (min-width: 481px) and (max-width: 800px) {
+  .menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
