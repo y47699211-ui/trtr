@@ -330,22 +330,21 @@ function renderTournaments(){
 
   /* Header pieces (admin "new tournament" + sync hint) — drawn into
      a stable host so re-paints don't strip the buttons mid-edit.
-     The offline banner only fires after we've genuinely tried and
-     failed at least twice in a row — otherwise the very first paint
-     (before any fetch has resolved) would falsely say "no internet"
-     even on a healthy connection. That false flag was exactly what
-     the screenshot of "Немає інтернету — показано кешовані турніри"
-     reported. */
+     The offline banner is now driven SOLELY by `navigator.onLine`
+     (the OS-level "no network at all" signal). If JSONBlob itself
+     is being slow / blocked we keep the normal hint visible — the
+     user genuinely has internet in that case and falsely telling
+     them "Немає інтернету" is what the screenshot complained about.
+     Two devices on the same WiFi where one sees the banner and the
+     other doesn't is exactly the symptom this guard removes. */
   const hint = document.getElementById("tourney-hint");
   if (hint){
-    const reallyOffline = tourneyCache.lastFetchAt > 0
-      && tourneyCache.online === false
-      && (tourneyCache.failureStreak | 0) >= 2;
+    const reallyOffline = (typeof navigator !== "undefined") && navigator.onLine === false;
     if (reallyOffline){
-      hint.textContent = t("trn.offline") || "Немає інтернету — показані останні турніри з кешу";
+      hint.textContent = t("trn.offline");
       hint.classList.add("warn");
     } else {
-      hint.textContent = t("trn.hint") || "Беріть участь у турнірах і вигравайте HEX";
+      hint.textContent = t("trn.hint");
       hint.classList.remove("warn");
     }
   }

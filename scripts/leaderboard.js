@@ -326,18 +326,14 @@ function _lbPaint(){
     empty.style.padding    = "22px";
     empty.style.textAlign  = "center";
     empty.style.color      = "var(--fg-dim)";
-    /* Only show the "no internet" copy when we really have nothing
-       to show AND the network has failed at least twice in a row
-       after an actual attempt. Without the lastFetchAt guard, the
-       very first paint (before any fetch resolved) would also say
-       "no internet" — exactly the bug "рейтинг работал раньше а
-       щяс перестал" describes. */
-    const reallyOffline = lbCache.lastFetchAt > 0
-      && lbCache.online === false
-      && (lbCache.failureStreak | 0) >= 2;
-    empty.textContent = reallyOffline
-      ? (t("lb.offline") || "Немає інтернету — рекорди недоступні")
-      : (t("lb.empty")   || "Ще немає жодного рекорду");
+    /* Drive the "offline" message off `navigator.onLine` only —
+       the OS is the source of truth for "no internet at all". If
+       JSONBlob itself is being blocked / slow but the device still
+       has connectivity we keep the friendlier "empty" copy. That
+       removes the false-positive where one phone on the same WiFi
+       saw rankings and another said "Немає інтернету". */
+    const reallyOffline = (typeof navigator !== "undefined") && navigator.onLine === false;
+    empty.textContent = reallyOffline ? t("lb.offline") : t("lb.empty");
     tbl.appendChild(empty);
     return;
   }
